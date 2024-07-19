@@ -44,12 +44,40 @@ if __name__ == "__main__":
     # Extrahování pixelových dat
     image_data = np.stack([s.pixel_array for s in slices])
     
-    viewer = napari.view_image(image_data)
+    
+    # viewer = napari.view_image(image_data)
+    # napari.run()
+    
+    
+    #Load Masks
+    path_spine_mask= [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('nnUNet_cor.nii.gz')]
+    
+    path_lesion_mask= [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('final.nii.gz')]
+    
+    
+    sitk.ProcessObject_SetGlobalWarningDisplay(False)
+    
+    SegmMaskSpine = sitk.GetArrayFromImage(sitk.ReadImage(path_spine_mask)).astype(np.float32)
+    
+    SegmMaskLesions = sitk.GetArrayFromImage(sitk.ReadImage(path_lesion_mask)).astype(np.float32)
+    
+    
+    v = napari.Viewer()
+    datalayer = v.add_image(image_data, name='data')
+    datalayer.colormap = 'gray'
+    datalayer.blending = 'additive'
+    
+    
+    SpineMaskLayer = v.add_image(SegmMaskSpine, name='SpineMask')
+    SpineMaskLayer.colormap = 'gray'
+    SpineMaskLayer.blending = 'additive'
+    
+    SpineMaskLayer = v.add_image(SegmMaskLesions, name='LessionMask')
+    SpineMaskLayer.colormap = 'red'
+    SpineMaskLayer.blending = 'additive'
+    
+    
     napari.run()
-    
-    
-    
-    
     
     
     
