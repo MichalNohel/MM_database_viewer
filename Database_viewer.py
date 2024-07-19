@@ -8,6 +8,7 @@ Created on Fri Jul 19 11:01:21 2024
 import napari
 import SimpleITK as sitk
 import pydicom
+import nibabel as nib
 import numpy as np
 import os
 join=os.path.join
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     slices.sort(key=lambda x: float(x.ImagePositionPatient[2]))
     
     # Extrahování pixelových dat
-    image_data = np.stack([s.pixel_array for s in slices])
+    image_data_txz = np.stack([s.pixel_array for s in slices])
     
     
     # viewer = napari.view_image(image_data)
@@ -55,24 +56,30 @@ if __name__ == "__main__":
     path_lesion_mask= [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('final.nii.gz')]
     
     
-    sitk.ProcessObject_SetGlobalWarningDisplay(False)
+    #sitk.ProcessObject_SetGlobalWarningDisplay(False)
     
-    SegmMaskSpine = sitk.GetArrayFromImage(sitk.ReadImage(path_spine_mask)).astype(np.float32)
+    #SegmMaskSpine = sitk.GetArrayFromImage(sitk.ReadImage(path_spine_mask)).astype(np.float32)
+    SegmMaskSpine = nib.load(path_spine_mask[0]).get_fdata()
+    SegmMaskSpine_txy=SegmMaskSpine.transpose(2,0,1)
+    SegmMaskSpine_txy = np.rot90(SegmMaskSpine_txy, k=1, axes=(1, 2))
+
     
-    SegmMaskLesions = sitk.GetArrayFromImage(sitk.ReadImage(path_lesion_mask)).astype(np.float32)
-    
-    
+    #SegmMaskLesions = sitk.GetArrayFromImage(sitk.ReadImage(path_lesion_mask)).astype(np.float32)
+    SegmMaskLesions = nib.load(path_lesion_mask[0]).get_fdata()
+    SegmMaskLesions_txy=SegmMaskLesions.transpose(2,0,1)
+    SegmMaskLesions_txy = np.rot90(SegmMaskLesions_txy, k=1, axes=(1, 2))
+    #%%
     v = napari.Viewer()
-    datalayer = v.add_image(image_data, name='data')
+    datalayer = v.add_image(image_data_txz, name='data')    
     datalayer.colormap = 'gray'
     datalayer.blending = 'additive'
     
     
-    SpineMaskLayer = v.add_image(SegmMaskSpine, name='SpineMask')
+    SpineMaskLayer = v.add_image(SegmMaskSpine_txy, name='SpineMask')
     SpineMaskLayer.colormap = 'gray'
     SpineMaskLayer.blending = 'additive'
     
-    SpineMaskLayer = v.add_image(SegmMaskLesions, name='LessionMask')
+    SpineMaskLayer = v.add_image(SegmMaskLesions_txy, name='LessionMask')
     SpineMaskLayer.colormap = 'red'
     SpineMaskLayer.blending = 'additive'
     
