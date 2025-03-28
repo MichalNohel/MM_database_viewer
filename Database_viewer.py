@@ -47,7 +47,7 @@ def get_dicom_orientation(dicom_file_path):
         sign = np.sign(axis[max_index])
         orientation.append(axis_labels[max_index] if sign > 0 else axis_labels[max_index].swapcase())
     
-    return ''.join(orientation)
+    return join(orientation)
 
 def reorient_nifti_to_ras(nifti_file_path):
     # Načtení NIFTI souboru
@@ -88,15 +88,16 @@ def load_DICOM_data(DICOM_files):
 if __name__ == "__main__":
     
     #%%
-    dicom_file_path = 'F:/MM_Dataset/S80060/S207300/I10'
-    orientation = get_dicom_orientation(dicom_file_path)
-    print(f"DICOM Orientation: {orientation}")
+    # dicom_file_path = 'F:/MM_Dataset/S80060/S207300/I10'
+    # orientation = get_dicom_orientation(dicom_file_path)
+    # print(f"DICOM Orientation: {orientation}")
     
     
     #%%
     
     base='../MM_Dataset/'
-    ID_patient="S80060"
+    ID_patient="S14180"
+    print(ID_patient)
     patient_main_file=join(base,ID_patient)
     
     DICOM_folders_all = []
