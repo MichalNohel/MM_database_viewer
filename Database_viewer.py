@@ -96,7 +96,7 @@ if __name__ == "__main__":
     #%%
     
     base='../MM_Dataset/'
-    ID_patient="S14180"
+    ID_patient="S56390"
     print(ID_patient)
     patient_main_file=join(base,ID_patient)
     
