@@ -11,6 +11,9 @@ import pandas as pd
 import datetime
 from matplotlib import pyplot as plt
 import seaborn as sns
+import pydicom
+import numpy as np
+from statistics import mode
 
 def create_file_set_from_path(dicoms_root_dir):
     fs = FileSet()
@@ -125,31 +128,84 @@ def get_metadata(dicoms_dir_path,only_conv=True):
             continue
     return results_table
 
+
+def get_spacing_between_slices_from_DICOM_data(DICOM_files):
+    
+    # Load metadata from dicom 
+    slices = [pydicom.dcmread(dicom_file) for dicom_file in DICOM_files]
+    # Sorting of slices based on ImagePosition
+    slices.sort(key=lambda x: float(x.ImagePositionPatient[2]))
+    
+    spacing_between_slices_all = []
+    for idx in range(0,len(slices)-1):
+        spacing_between_slices_all.append(round(float(np.abs(slices[idx].SliceLocation - slices[idx+1].SliceLocation)),2))
+          
+    unique_spacing_between_slices = np.unique(spacing_between_slices_all)
+    spacing_between_slices = mode(spacing_between_slices_all)
+    
+    
+
+    return spacing_between_slices,unique_spacing_between_slices
+
 if __name__ == "__main__":
     
+    
+    metadata_table = get_metadata('E:/ISP_Myelomy_export', only_conv=False)
+    '''
+    
     base='E:/ISP_Myelomy_export'
+    
+    all_ID_patient = [name for name in os.listdir(base) if os.path.isdir(os.path.join(base, name)) and name.startswith('S')]
+    
+    results_table_SpacingBetweenSlices = pd.DataFrame()
+    
+    for patient_idx, ID_patient in enumerate(all_ID_patient):
+        patient_main_file=join(base,ID_patient)    
+        DICOM_folders_all = []
+        # Procházení souborů v adresáři
+        for filename in os.listdir(patient_main_file):
+            if filename.startswith('S20'):
+                DICOM_folders_all.append(filename)
+        print(DICOM_folders_all)
+    
+    
+        # %%
+        for DICOM_folder in DICOM_folders_all:
+            DICOM_folder_path=join(patient_main_file,DICOM_folder)
+            # Načtení všech DICOM souborů z adresáře, vynechání souboru DIRFILE
+            DICOM_files = [os.path.join(DICOM_folder_path, f) for f in os.listdir(DICOM_folder_path) if f != 'DIRFILE']
+            series_description = pydicom.dcmread(DICOM_files[0]).get('SeriesDescription')
+            #print(series_description)
+            
+            if series_description.endswith('_konv'):
+                SpacingBetweenSlices,unique_spacing_between_slices = get_spacing_between_slices_from_DICOM_data(DICOM_files)
+                print (series_description)
+                print (SpacingBetweenSlices)
+                print (unique_spacing_between_slices)
+                
+                results_table_SpacingBetweenSlices = pd.concat([results_table_SpacingBetweenSlices, pd.DataFrame({'SeriesDescription': series_description,
+                                                                          'SpacingBetweenSlices': SpacingBetweenSlices,
+                                                                          'unique_spacing_between_slices_min': unique_spacing_between_slices[0],
+                                                                          'unique_spacing_between_slices_max': unique_spacing_between_slices[1]
+                                                                        }, index=[patient_idx])])
+                break
+            else:
+                continue
+    
+    results_table_SpacingBetweenSlices.to_excel('metadata_SpacingBetweenSlices.xlsx')
+    
     '''
-    ID_patient="S80060"
-    print(ID_patient)
-    patient_main_file=join(base,ID_patient)
     
     
-    DICOM_folders_all = []
-
-    # Procházení souborů v adresáři
-    for filename in os.listdir(patient_main_file):
-        if filename.startswith('S20'):
-            DICOM_folders_all.append(filename)
-    print(DICOM_folders_all)
+    
+    
+    # %% Get Metadata
+    # metadata_table_SBI = get_metadata_SBI('F:/Raw_data_SBI')
+    # #metadata_table_SBI.to_excel('metadata_SBI.xlsx')
+    # metadata_table_SBI_sorted = metadata_table_SBI.sort_values(by='PatientID')
+    # metadata_table_SBI_sorted.to_excel('metadata_SBI_sorted.xlsx')
+    
     '''
-    
-        
-    metadata_table_SBI = get_metadata_SBI('F:/Raw_data_SBI')
-    #metadata_table_SBI.to_excel('metadata_SBI.xlsx')
-    metadata_table_SBI_sorted = metadata_table_SBI.sort_values(by='PatientID')
-    metadata_table_SBI_sorted.to_excel('metadata_SBI_sorted.xlsx')
-    
-        
     metadata_table = get_metadata('E:/ISP_Myelomy_export', only_conv=False)    
     #metadata_table.to_excel('metadata_export_all.xlsx')
     metadata_table_sorted = metadata_table.sort_values(by='PatientID')
@@ -206,6 +262,9 @@ if __name__ == "__main__":
         title='Filter type distribution')
     # plt.show()
     plt.savefig('filter_type_distribution.png', bbox_inches='tight')
+    '''
+    
+    
     
     
     
