@@ -50,7 +50,7 @@ def reorient_to_DICOM_orientation(dicom_folder,nifti_path,output_path):
     mask_data = np.rot90(mask_data, k=-1, axes=(0, 1))
     
     
-    original_affine = mask_img.affine    
+    # original_affine = mask_img.affine    
     # Změna orientace: Vynásobíme první a druhý řádek afinní matice -1
     affine_matrix[0, :] *= -1  # Vynásobení celého 1. řádku -1
     affine_matrix[1, :] *= -1  # Vynásobení celého 2. řádku -1
@@ -61,21 +61,45 @@ def reorient_to_DICOM_orientation(dicom_folder,nifti_path,output_path):
     # Uložení do nového souboru
     nib.save(new_mask_img, output_path)
     
+def reorient_to_DICOM_orientation_SITK(dicom_folder, nifti_path, output_path):
+    # Načtení DICOM objemu a afinní matice
+    image, affine_matrix = load_dicom_series(dicom_folder)
+
+    # Načtení segmentační masky pomocí nibabel
+    mask_img = nib.load(nifti_path)
+    mask_data = mask_img.get_fdata()
+
+    # Transpozice a rotace masky podle požadavku
+    mask_data = mask_data.transpose(2, 0, 1)
+    mask_data = np.rot90(mask_data, k=1, axes=(1, 2))
+
+    # Převedení numpy pole do SimpleITK formátu
+    sitk_mask = sitk.GetImageFromArray(mask_data.astype(np.uint8))  # nebo jiný vhodný typ
+
+    # Nastavení geometrie podle DICOMu
+    sitk_mask.SetDirection(image.GetDirection())
+    sitk_mask.SetSpacing(image.GetSpacing())
+    sitk_mask.SetOrigin(image.GetOrigin())
+
+    # Uložení výsledné masky
+    sitk.WriteImage(sitk_mask, output_path)
+    
+
 #%%
 if __name__ == "__main__":
     base = 'E:/Znaceni_dat/Data/'
+    nib.openers.Opener.default_compresslevel = 9
     
-    for t in subdirs(base, join=False, prefix="Myel_"): 
+    for t in subdirs(base, join=False, prefix="Myel_"):
         
+        # t = 'Myel_004'
         dicom_folder = join(base, t, 'ConvCT_data_dicom')
            
         path_spine_mask = subfiles(join(base, t, 'Spine_labels/NN_Unet'), join=True, suffix="spine_seg_nnUNet_cor.nii.gz")[0]   
         nifti_path = path_spine_mask
         # output_path = path_lesion_mask[:-7] + '_DICOM_Orientation_final_3.nii.gz'
         output_path = join(base, t, 'Spine_labels/NN_Unet', t + '_spine_segmentation.nii.gz')
-        reorient_to_DICOM_orientation(dicom_folder,nifti_path,output_path)
-        
-        
+        reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path) 
 
         
         # #Load Masks
@@ -83,7 +107,7 @@ if __name__ == "__main__":
         nifti_path = path_lesion_mask
         # output_path = path_lesion_mask[:-7] + '_DICOM_Orientation_final_3.nii.gz'
         output_path = join(base, t, 'Lesion_labels', t + '_lesions_segmentation.nii.gz')
-        reorient_to_DICOM_orientation(dicom_folder,nifti_path,output_path)
+        reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path)
         
         
         

@@ -83,22 +83,31 @@ def load_DICOM_data(DICOM_files):
     # Extrahování pixelových dat
     img_data_zxy = np.stack([s.pixel_array for s in slices])
     return img_data_zxy
+
+def load_DICOM_data_SITK(path_to_series):
+    # Načtení všech DICOM snímků do 3D obrazu
+    dicom_series_reader = sitk.ImageSeriesReader()
+    # Získání seznamu DICOM souborů v adresáři
+    dicom_filenames = dicom_series_reader.GetGDCMSeriesFileNames(path_to_series)
+    # Nastavení souborů pro čtení
+    dicom_series_reader.SetFileNames(dicom_filenames)
+    # Načtení 3D obrazu
+    image_3d = dicom_series_reader.Execute()
+    img_data_zxy = sitk.GetArrayFromImage(image_3d)
+    return img_data_zxy
+    
     
 #%%
 if __name__ == "__main__":
-    
-    #%%
-    # dicom_file_path = 'F:/MM_Dataset/S80060/S207300/I10'
-    # orientation = get_dicom_orientation(dicom_file_path)
-    # print(f"DICOM Orientation: {orientation}")
-    
-    
+       
     #%%
     
-    base='../MM_Dataset/'
-    ID_patient="S56390"
+    base='F:/Spinal-Multiple-Myeloma-SEG-Example-Data-Nohel/MM_DICOM_Dataset'
+    ID_patient="S80060"
     print(ID_patient)
     patient_main_file=join(base,ID_patient)
+    
+    path_to_masks = 'F:/Spinal-Multiple-Myeloma-SEG-Example-Data-Nohel/MM_NIfTI Segmentation'
     
     DICOM_folders_all = []
 
@@ -182,13 +191,6 @@ if __name__ == "__main__":
     
     
     
-    
-    
-    
-    
-    
-    
-    
     # %%
     for DICOM_folder in DICOM_folders_all:
         DICOM_folder_path=join(patient_main_file,DICOM_folder)
@@ -197,36 +199,76 @@ if __name__ == "__main__":
         series_description = pydicom.dcmread(DICOM_files[0]).get('SeriesDescription')
         print(series_description)
         if series_description=='Calcium Suppression 25 Index[HU*]':
-            CaSupp25_zxy=load_DICOM_data(DICOM_files)
+            CaSupp25_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         elif series_description=='Calcium Suppression 50 Index[HU*]':
-            CaSupp50_zxy=load_DICOM_data(DICOM_files)
+            CaSupp50_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         elif series_description=='Calcium Suppression 75 Index[HU*]':
-            CaSupp75_zxy=load_DICOM_data(DICOM_files)
+            CaSupp75_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         elif series_description=='Calcium Suppression 100 Index[HU*]':
-            CaSupp100_zxy=load_DICOM_data(DICOM_files)
+            CaSupp100_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         elif series_description=='MonoE 40keV[HU]':
-            VMI40_zxy=load_DICOM_data(DICOM_files)
+            VMI40_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         elif series_description=='MonoE 80keV[HU]':
-            VMI80_zxy=load_DICOM_data(DICOM_files)
+            VMI80_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         elif series_description=='MonoE 120keV[HU]':
-            VMI120_zxy=load_DICOM_data(DICOM_files)
+            VMI120_zxy=load_DICOM_data_SITK(DICOM_folder_path)
         else:
-            ConvCT_zxy=load_DICOM_data(DICOM_files)
+            ConvCT_zxy=load_DICOM_data_SITK(DICOM_folder_path)
+            patient_name = series_description[:8]
+    
+    
+    
+    
+    
+    
+    # %%
+    # for DICOM_folder in DICOM_folders_all:
+    #     DICOM_folder_path=join(patient_main_file,DICOM_folder)
+    #     # Načtení všech DICOM souborů z adresáře, vynechání souboru DIRFILE
+    #     DICOM_files = [os.path.join(DICOM_folder_path, f) for f in os.listdir(DICOM_folder_path) if f != 'DIRFILE']
+    #     series_description = pydicom.dcmread(DICOM_files[0]).get('SeriesDescription')
+    #     print(series_description)
+    #     if series_description=='Calcium Suppression 25 Index[HU*]':
+    #         CaSupp25_zxy=load_DICOM_data(DICOM_files)
+    #     elif series_description=='Calcium Suppression 50 Index[HU*]':
+    #         CaSupp50_zxy=load_DICOM_data(DICOM_files)
+    #     elif series_description=='Calcium Suppression 75 Index[HU*]':
+    #         CaSupp75_zxy=load_DICOM_data(DICOM_files)
+    #     elif series_description=='Calcium Suppression 100 Index[HU*]':
+    #         CaSupp100_zxy=load_DICOM_data(DICOM_files)
+    #     elif series_description=='MonoE 40keV[HU]':
+    #         VMI40_zxy=load_DICOM_data(DICOM_files)
+    #     elif series_description=='MonoE 80keV[HU]':
+    #         VMI80_zxy=load_DICOM_data(DICOM_files)
+    #     elif series_description=='MonoE 120keV[HU]':
+    #         VMI120_zxy=load_DICOM_data(DICOM_files)
+    #     else:
+    #         ConvCT_zxy=load_DICOM_data(DICOM_files)
+    #         patient_name = series_description[:8]
     # %%
     #Load Masks
-    path_spine_mask= [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('nnUNet_cor.nii.gz')]
     
-    path_lesion_mask= [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('final.nii.gz')]
+    # path_spine_mask = [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('nnUNet_cor.nii.gz')]
+    # path_lesion_mask = [os.path.join(patient_main_file, f) for f in os.listdir(patient_main_file) if f.endswith('final.nii.gz')]
+    
+    path_spine_mask = join(path_to_masks, patient_name,patient_name + '_spine_segmentation.nii.gz')
+    path_lesion_mask = join(path_to_masks, patient_name,patient_name + '_lesions_segmentation.nii.gz')
     
     #%%
-    SegmMaskSpine = nib.load(path_spine_mask[0]).get_fdata()
-    SegmMaskSpine_zxy = SegmMaskSpine.transpose(2,0,1)
-    SegmMaskSpine_zxy = np.rot90(SegmMaskSpine_zxy, k=1, axes=(1, 2))
-    
+    # SegmMaskSpine = nib.load(path_spine_mask[0]).get_fdata()
+    # SegmMaskSpine_zxy = SegmMaskSpine.transpose(2,0,1)
+    # SegmMaskSpine_zxy = np.rot90(SegmMaskSpine_zxy, k=1, axes=(1, 2))    
 
-    SegmMaskLesions = nib.load(path_lesion_mask[0]).get_fdata()
-    SegmMaskLesions_zxy = SegmMaskLesions.transpose(2,0,1)
-    SegmMaskLesions_zxy = np.rot90(SegmMaskLesions_zxy, k=1, axes=(1, 2))
+    # SegmMaskLesions = nib.load(path_lesion_mask[0]).get_fdata()
+    # SegmMaskLesions_zxy = SegmMaskLesions.transpose(2,0,1)
+    # SegmMaskLesions_zxy = np.rot90(SegmMaskLesions_zxy, k=1, axes=(1, 2))
+    
+    #%%
+    # SegmMaskSpine = nib.load(path_spine_mask).get_fdata()
+    SegmMaskSpine = sitk.GetArrayFromImage(sitk.ReadImage(path_spine_mask))
+
+    # SegmMaskLesions = nib.load(path_lesion_mask).get_fdata()
+    SegmMaskLesions = sitk.GetArrayFromImage(sitk.ReadImage(path_lesion_mask))
     #%%
     v = napari.Viewer()  
     ConvCT_layer = v.add_image(ConvCT_zxy, name='ConvCT')       
@@ -268,12 +310,14 @@ if __name__ == "__main__":
     CaSupp100_layer.blending = 'additive'
     CaSupp100_layer.visible = False
     
-    SpineMaskLayer = v.add_image(SegmMaskSpine_zxy, name='SpineMask')
+    # SpineMaskLayer = v.add_image(SegmMaskSpine_zxy, name='SpineMask')
+    SpineMaskLayer = v.add_image(SegmMaskSpine, name='SpineMask')
     SpineMaskLayer.colormap = 'blue'
     SpineMaskLayer.blending = 'additive'
     SpineMaskLayer.opacity = 0.5
     
-    LesionMaskLayer = v.add_image(SegmMaskLesions_zxy, name='LessionMask')
+    # LesionMaskLayer = v.add_image(SegmMaskLesions_zxy, name='LessionMask')
+    LesionMaskLayer = v.add_image(SegmMaskLesions, name='LessionMask')
     LesionMaskLayer.colormap = 'red'
     LesionMaskLayer.blending = 'additive'
     LesionMaskLayer.opacity = 1
