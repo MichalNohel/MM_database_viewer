@@ -11,7 +11,7 @@ join=os.path.join
 
 if __name__ == "__main__":
     
-    base = 'F:\Spinal-Multiple-Myeloma-SEG-Example-Data-Nohel\Spreadsheets' 
+    base = 'F:/Spinal-Multiple-Myeloma-SEG-Example-Data-Nohel/Spreadsheets_corrected_final' 
     
     Table_clinical_data = pd.read_excel(join(base,'Table_clinical_data.xlsx'))
     Table_clinical_data.to_csv(join(base,'Table_clinical_data.csv'), index=False, encoding='cp1250')
@@ -22,5 +22,9 @@ if __name__ == "__main__":
     
     Table_of_image_data_description = pd.read_excel(join(base,'Table_of_image_data_description.xlsx'))
     Table_of_image_data_description.to_csv(join(base,'Table_of_image_data_description.csv'), index=False, encoding='cp1250')
+    
+    Tables_description = pd.read_excel(join(base,'Tables_description.xlsx'))
+    Tables_description.to_csv(join(base,'Tables_description.csv'), index=False, encoding='cp1250')
+    
     
     

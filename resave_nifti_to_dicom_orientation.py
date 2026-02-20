@@ -88,18 +88,18 @@ def reorient_to_DICOM_orientation_SITK(dicom_folder, nifti_path, output_path):
 #%%
 if __name__ == "__main__":
     base = 'E:/Znaceni_dat/Data/'
-    nib.openers.Opener.default_compresslevel = 9
+    #nib.openers.Opener.default_compresslevel = 9
     
     for t in subdirs(base, join=False, prefix="Myel_"):
         
-        # t = 'Myel_004'
+        t = 'Myel_072'
         dicom_folder = join(base, t, 'ConvCT_data_dicom')
            
-        path_spine_mask = subfiles(join(base, t, 'Spine_labels/NN_Unet'), join=True, suffix="spine_seg_nnUNet_cor.nii.gz")[0]   
-        nifti_path = path_spine_mask
-        # output_path = path_lesion_mask[:-7] + '_DICOM_Orientation_final_3.nii.gz'
-        output_path = join(base, t, 'Spine_labels/NN_Unet', t + '_spine_segmentation.nii.gz')
-        reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path) 
+        # path_spine_mask = subfiles(join(base, t, 'Spine_labels/NN_Unet'), join=True, suffix="spine_seg_nnUNet_cor.nii.gz")[0]   
+        # nifti_path = path_spine_mask
+        # # output_path = path_lesion_mask[:-7] + '_DICOM_Orientation_final_3.nii.gz'
+        # output_path = join(base, t, 'Spine_labels/NN_Unet', t + '_spine_segmentation.nii.gz')
+        # reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path) 
 
         
         # #Load Masks
