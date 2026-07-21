@@ -83,7 +83,7 @@ def plot_lesion_size_histogram(sizes, max_size=10000, bins=30, output_path=None)
     else:
         ax.set_xlim(0, max_size)
 
-    ax.set_xlabel('Lesion volume (mm^3)')
+    ax.set_xlabel('Lesion volume (mm³)')
     ax.set_ylabel('Number of lesions')
     ax.set_title('Histogram of lesion sizes', fontweight='bold')
     ax.grid(axis='y', alpha=0.3)

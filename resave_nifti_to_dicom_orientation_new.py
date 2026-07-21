@@ -108,7 +108,7 @@ if __name__ == "__main__":
     base_segmentation = 'Z:\Multiple_Myeloma_Project\Spinal-Multiple-Myeloma-SEG-Final_Dataset\Spinal-Multiple-Myeloma-SEG_Trabecular_segmentation\DATA'
     for t in subdirs(base, join=False, prefix="Myel_"):
         
-        t = 'Myel_081'
+        t = 'Myel_021'
         if t == 'Myel_017':
             continue
 
@@ -121,21 +121,22 @@ if __name__ == "__main__":
         # # output_path = path_lesion_mask[:-7] + '_DICOM_Orientation_final_3.nii.gz'
         output_path = join(base, t, 'Spine_labels/NN_Unet', t + '_spine_segmentation.nii.gz')
         reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path) 
+        
+        
         '''
-        
-        
         # #Load Masks
         path_lesion_mask = subfiles(join(base, t, 'Lesion_labels'), join=True, suffix="validation_VV_final_semantic.nii.gz")[0]  
         nifti_path = path_lesion_mask
         # output_path = path_lesion_mask[:-7] + '_DICOM_Orientation_final_3.nii.gz'
         output_path = join(base, t, t + '_lesions_segmentation.nii.gz')
         reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path)
-
         
-        # nifti_path = find_trabecular_spine_mask(base_segmentation, t)
-        # output_path = join(base_segmentation, t, t + '_trabecular_spine_segmentation.nii.gz')
-        # reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path)
-
+        '''
+        
+        nifti_path = find_trabecular_spine_mask(base_segmentation, t)
+        output_path = join(base_segmentation, t, t + '_trabecular_spine_segmentation.nii.gz')
+        reorient_to_DICOM_orientation_SITK(dicom_folder,nifti_path,output_path)
+        '''
 
 
 
